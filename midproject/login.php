@@ -25,6 +25,7 @@
           
             if (password_verify($password, $user['password'])) {
                
+                $_SESSION['userId'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
 
                 

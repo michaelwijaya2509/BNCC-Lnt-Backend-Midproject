@@ -1,5 +1,6 @@
+//generate random id
 function generateRandomId() {
-    return Math.floor(Math.random() * 100000 + 1); // Generate ID antara 0 dan 99999
+    return Math.floor(Math.random() * 100000 + 1); 
 }
 
 function setRandomId() {
