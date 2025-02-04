@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <?php
         session_start();
         include 'db.php';
@@ -26,7 +27,7 @@
             exit();
         }
 
-         // Ambil data buku berdasarkan user yang login
+        // Ambil data buku berdasarkan user yang login
         $bookQuery = "SELECT * FROM book WHERE user_id = ?";
         $stmt = $conn->prepare($bookQuery);
         $stmt->bind_param("i", $user_id);
@@ -34,67 +35,107 @@
         $books = $stmt->get_result();
     ?>
 
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Navbar</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <!-- Tombol untuk membuka sidebar -->
-            <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#profileSidebar">
-                Profil
-            </button>
-        </div>
-    </nav>
+    <div class="content">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Navbar</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Tombol untuk membuka sidebar -->
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#profileSidebar">
+                    Profil
+                </button>
+            </div>
+        </nav>
 
-    <!-- Sidebar Profil -->
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="profileSidebar" aria-labelledby="profileSidebarLabel">
-        <div class="offcanvas-header">
-            <h5 id="profileSidebarLabel">Profil Pengguna</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <!-- Sidebar Profil -->
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="profileSidebar" aria-labelledby="profileSidebarLabel">
+            <div class="offcanvas-header">
+                <h5 id="profileSidebarLabel">Profil Pengguna</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <p><strong>Nama:</strong> <?php echo htmlspecialchars($user['username']); ?></p>
+                <p><strong>ID:</strong> <?php echo htmlspecialchars($user['id']); ?></p>
+                <a href="LoginPage.php" class="btn btn-danger">Logout</a>
+            </div>
         </div>
-        <div class="offcanvas-body">
-            <p><strong>Nama:</strong> <?php echo htmlspecialchars($user['username']); ?></p>
-            <p><strong>ID:</strong> <?php echo htmlspecialchars($user['id']); ?></p>
-            <a href="LoginPage.php" class="btn btn-danger">Logout</a>
+
+        <!-- Main Content -->
+        <div class="container mt-4">
+            <h2 class="text-center">Your Book Info</h2>
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Publisher</th>
+                        <th>Number of Page</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($book = $books->fetch_assoc()): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($book['id']); ?></td>
+                        <td><?php echo htmlspecialchars($book['name']); ?></td>
+                        <td><?php echo htmlspecialchars($book['author']); ?></td>
+                        <td><?php echo htmlspecialchars($book['publisher']); ?></td>
+                        <td><?php echo htmlspecialchars($book['number_of_page']); ?></td>
+                        <td><a href="viewbook.php?id=<?php echo $book['id']; ?>" class="btn btn-info">View</a></td>
+                        <td><a href="editbook.php?id=<?php echo $book['id']; ?>" class="btn btn-warning">Edit</a></td>
+                        <td><a href="deletebook.php?id=<?php echo $book['id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure?');">Delete</a></td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+
+            <!-- Tombol untuk menambah buku -->
+            <div class="d-flex justify-content-end">
+                <a href="addbook.php" class="btn btn-secondary">Add New Book</a>
+            </div>
         </div>
     </div>
 
-    <div class="container mt-4">
-        <h2 class="text-center">Your Book Info</h2>
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Publisher</th>
-                    <th>Number of Page</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($book = $books->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($book['id']); ?></td>
-                    <td><?php echo htmlspecialchars($book['name']); ?></td>
-                    <td><?php echo htmlspecialchars($book['author']); ?></td>
-                    <td><?php echo htmlspecialchars($book['publisher']); ?></td>
-                    <td><?php echo htmlspecialchars($book['number_of_page']); ?></td>
-                    <td><a href="viewbook.php?id=<?php echo $book['id']; ?>" class="btn btn-info">View</a></td>
-                    <td><a href="editbook.php?id=<?php echo $book['id']; ?>" class="btn btn-warning">Edit</a></td>
-                    <td><a href="deletebook.php?id=<?php echo $book['id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure?');">Delete</a></td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-        
-        <div class="d-flex justify-content-end">
-            <a href="addbook.php" class="btn btn-secondary">Add New Book</a>
-        </div>
-        
-    </div>
-    
+    <!-- Footer -->
+    <footer>
+        <p>&copy; <?php echo date("Y"); ?> Your Website. All Rights Reserved.</p>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        /* Memastikan body dan html mengisi penuh layar */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        /* Menggunakan flexbox untuk memastikan footer selalu di bawah */
+        .content {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%; /* Memastikan minimal tinggi halaman 100% */
+        }
+
+        .main-content {
+            flex-grow: 1; /* Konten utama tumbuh untuk mengisi ruang yang tersisa */
+        }
+
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: auto; /* Memastikan footer berada di bagian bawah */
+        }
+
+        .navbar {
+            margin-bottom: 20px;
+        }
+    </style>
 </body>
 </html>
