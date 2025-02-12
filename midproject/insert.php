@@ -1,33 +1,53 @@
 <?php
-// Hubungkan ke database
-include 'db.php';
+    // Hubungkan ke database
+    include 'db.php';
 
-// Variabel untuk menampilkan pesan
-$message = "";
+    // Variabel untuk menampilkan pesan
+    $message = "";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Ambil data dari form
-    $userId = intval($_POST['userId']); // ID dari input hidden
-    $username = $_POST['username'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT); // Enkripsi password
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Ambil data dari form
+        $userId = intval($_POST['userId']);
+        $username = $_POST['username'];
+        $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
-    // Query untuk memasukkan data ke tabel 'users'
-    $query = "INSERT INTO user (id, username, password) VALUES (?, ?, ?)";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('iss', $userId, $username, $password);
+        // Periksa apakah username sudah ada
+        $checkQuery = "SELECT id FROM user WHERE username = ?";
+        $stmt = $conn->prepare($checkQuery);
+        $stmt->bind_param('s', $username);
+        $stmt->execute();
+        $stmt->store_result();
 
-    // Eksekusi query dan periksa keberhasilannya
-    if ($stmt->execute()) {
-        $message = "<div class='alert alert-success'>Registrasi berhasil! <a href='LoginPage.php'>Login sekarang</a></div>";
-    } else {
-        $message = "<div class='alert alert-danger'>Terjadi kesalahan: " . $stmt->error . "</div>";
+        if ($stmt->num_rows > 0) {
+            // Username sudah ada, redirect kembali ke register.php dengan pesan error
+            header("Location: register.php?error=username_taken");
+            exit();
+        }
+
+        // Tutup statement untuk pengecekan username
+        $stmt->close();
+
+        // Query untuk memasukkan data ke tabel 'user'
+        $query = "INSERT INTO user (id, username, password) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param('iss', $userId, $username, $password);
+
+        if ($stmt->execute()) {
+            // Jika berhasil, arahkan ke halaman login dengan pesan sukses
+            header("Location: LoginPage.php?success=registered");
+            exit();
+        } else {
+            // Jika gagal, tampilkan pesan error
+            header("Location: register.php?error=database_error");
+            exit();
+        }
+
+        // Tutup statement dan koneksi
+        $stmt->close();
+        $conn->close();
     }
-
-    // Tutup statement dan koneksi
-    $stmt->close();
-    $conn->close();
-}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
