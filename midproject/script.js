@@ -8,3 +8,6 @@ function setRandomId() {
     console.log("Generated ID:", randomId); 
     document.getElementById('userId').value = randomId;
 }
+
+// Pastikan script berjalan setelah halaman termuat
+document.addEventListener("DOMContentLoaded", setRandomId);

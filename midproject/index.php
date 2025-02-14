@@ -47,6 +47,31 @@
     </style>
 </head>
 <body>
+<?php
+        session_start();
+        include 'db.php';
+
+        // Pastikan pengguna sudah login
+        if (isset($_SESSION['userId'])) {
+            $user_id = $_SESSION['userId'];
+            $query = "SELECT id, username FROM user WHERE id = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $user = $result->fetch_assoc();
+        } else {
+            header("Location: login.php"); // Redirect ke halaman login jika belum login
+            exit();
+        }
+
+        // Ambil data buku berdasarkan user yang login
+        $bookQuery = "SELECT * FROM book WHERE user_id = ?";
+        $stmt = $conn->prepare($bookQuery);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $books = $stmt->get_result();
+    ?>
     <div class="overlay"></div>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
@@ -64,47 +89,47 @@
         </div>
     </nav>
 
-    <div class="offcanvas offcanvas-end" id="profileSidebar">
-        <div class="offcanvas-header">
-            <h5>Profil Pengguna</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="profileSidebar" aria-labelledby="profileSidebarLabel">
+            <div class="offcanvas-header">
+                <h5 id="profileSidebarLabel">Profil Pengguna</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <p><strong>Nama:</strong> <?php echo htmlspecialchars($user['username']); ?></p>
+                <p><strong>ID:</strong> <?php echo htmlspecialchars($user['id']); ?></p>
+                <a href="LoginPage.php" class="btn btn-danger">Logout</a>
+            </div>
         </div>
-        <div class="offcanvas-body">
-            <p><strong>Nama:</strong> User</p>
-            <p><strong>ID:</strong> 12345</p>
-            <a href="login.php" class="btn btn-danger">Logout</a>
-        </div>
-    </div>
 
     <div class="container mt-4">
         <div class="table-container">
             <h2 class="text-center">Your Book Info</h2>
-            <table class="table table-bordered table-striped text-white">
+            <table class="table table-bordered table-striped">
                 <thead class="table-dark">
                     <tr>
                         <th>ID</th>
                         <th>Title</th>
                         <th>Author</th>
                         <th>Publisher</th>
-                        <th>Number of Pages</th>
-                        <th>Actions</th>
+                        <th>Number of Page</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <?php while ($book = $books->fetch_assoc()): ?>
                     <tr>
-                        <td>1</td>
-                        <td>Book Title</td>
-                        <td>Author Name</td>
-                        <td>Publisher</td>
-                        <td>300</td>
-                        <td>
-                            <a href="#" class="btn btn-info">View</a>
-                            <a href="#" class="btn btn-warning">Edit</a>
-                            <a href="#" class="btn btn-danger">Delete</a>
-                        </td>
+                        <td><?php echo htmlspecialchars($book['id']); ?></td>
+                        <td><?php echo htmlspecialchars($book['name']); ?></td>
+                        <td><?php echo htmlspecialchars($book['author']); ?></td>
+                        <td><?php echo htmlspecialchars($book['publisher']); ?></td>
+                        <td><?php echo htmlspecialchars($book['number_of_page']); ?></td>
+                        <td><a href="viewbook.php?id=<?php echo $book['id']; ?>" class="btn btn-info">View</a></td>
+                        <td><a href="editbook.php?id=<?php echo $book['id']; ?>" class="btn btn-warning">Edit</a></td>
+                        <td><a href="deletebook.php?id=<?php echo $book['id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure?');">Delete</a></td>
                     </tr>
+                    <?php endwhile; ?>
                 </tbody>
             </table>
+
             <div class="d-flex justify-content-end">
                 <a href="addbook.php" class="btn btn-secondary" id="addNewBookButton">Add New Book</a>
             </div>

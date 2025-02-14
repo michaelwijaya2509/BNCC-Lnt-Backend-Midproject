@@ -51,7 +51,11 @@
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="col-md-6 form-container">
             <h1 class="text-center">Register</h1>
+            <?php if (isset($_GET['error']) && $_GET['error'] == 'username_taken'): ?>
+                    <div class="alert alert-danger">Username is already taken. Please choose another one.</div>
+            <?php endif; ?>
             <form action="insert.php" method="POST">
+            <input type="hidden" id="userId" name="userId">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username: </label>
                     <input type="text" class="form-control" id="username" name="username" required>
@@ -65,7 +69,7 @@
         </div>
     </div>
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", setRandomId); {
         // Transisi untuk semua tautan (a) agar smooth
         document.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', function(event) {
